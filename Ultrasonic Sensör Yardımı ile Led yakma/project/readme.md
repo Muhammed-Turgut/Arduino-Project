@@ -1,14 +1,14 @@
-<img src="https://github.com/Muhammed-Turgut/imageRaw/blob/main/Ardunio%20Potasyo%20metre%20ile%20led%20yakma%20projesi.png?raw=true" algn= "center">
+<img src="https://github.com/Muhammed-Turgut/imageRaw/blob/main/ultrasonik_sens%C3%B6r_projesi.png?raw=true" algn= "center">
 
-# Arduino Uno Potasyometre ve LED Projesi
+# Arduino Uno Ultrasonic Sensör ve LED Projesi
 
-Bu projede 3 kırmızı 3 sarı ve 3 yeşil ledi Potasyometreden analoıg okuma yapılarak ledleri yakıp söndürmeyi sağlıyoruz. 
+Bu projede 3 kırmızı 3 sarı ve 3 yeşil ledi Ultrasoniksensörde analoıg okuma yapılarak ledleri yakıp söndürmeyi sağlıyoruz. 
 
 ---
 
 ## Proje Amacı
 
-- Temel amaç potasyometrenin çalışma manıtığını kavramak.
+- Temel amaç Ultra sonik Sensörün çalışma manıtığını kavramak.
 
 
 ---
@@ -21,7 +21,7 @@ Bu projede 3 kırmızı 3 sarı ve 3 yeşil ledi Potasyometreden analoıg okuma 
 - 3 adet yeşil LED
 - 1 Arduino Uno.
 - Jummper Kablo
-- 1 adet Potasyometre (10k Ohm).
+- 1 adet Ultra sonik sensör (HC-SR04).
 
 
 
@@ -30,38 +30,74 @@ Bu projede 3 kırmızı 3 sarı ve 3 yeşil ledi Potasyometreden analoıg okuma 
 ## Nasıl Çalışır?
 
 1. **Potasyometreden** okuma yapılarak gelen değer üzerinden ledlerin belirli sırada yakıp söndürülmesi sağalanıyor.
-   ```bash
-   int leds[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9}; // LED pinleri
-   int potPin = A0;
-   int potDeger = 0;
+  ```bash
+   #define TRIG 9
+   #define ECHO 10
+   long sure;
+   int mesafe;
 
+   int leds[9] = {1, 2, 3, 4, 5, 6, 7, 8, 11};
+  
    void setup() {
-   for (int i = 0; i < 9; i++) {
-    pinMode(leds[i], OUTPUT);
+   for (int i = 0; i < 9; i++){
+     pinMode(leds[i], OUTPUT);
    }
+
+   pinMode(TRIG, OUTPUT);
+   pinMode(ECHO, INPUT);
    Serial.begin(9600);
    }
 
    void loop() {
-    potDeger = analogRead(potPin); // 0-1023 arası değer
-   Serial.println(potDeger);
+    // TRIG pinini temizle
+    digitalWrite(TRIG, LOW);
+    delayMicroseconds(2);
 
-   // Pot değerini 0-9 kademeye çevir
-   int kademe = map(potDeger, 0, 1023, 0, 9);
+   // 10 µs tetik darbesi gönder
+   digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
 
-   // Önce tüm LED'leri kapat
-   for (int i = 0; i < 9; i++) {
+  // ECHO süresini ölç
+  sure = pulseIn(ECHO, HIGH);
+
+  // Mesafe hesapla (cm cinsinden)
+  mesafe = sure * 0.034 / 2;
+
+  // Önce tüm LED’leri söndür
+  for (int i = 0; i < 9; i++) {
     digitalWrite(leds[i], LOW);
-   }
+  }
 
-   // Kademeye kadar olan LED'leri yak
-   for (int i = 0; i < kademe; i++) {
-    digitalWrite(leds[i], HIGH);
-   }
+  if (mesafe > 1 && mesafe < 10) {
+    for (int i = 1; i <= 2; i++) {
+      digitalWrite(leds[i], HIGH);
+    }
+  }
 
-   delay(50); // Güncelleme hızı
-   }
-<img src="https://github.com/Muhammed-Turgut/imageRaw/blob/main/ArdunioProjectImage.jpg" align="center" style="transform: rotate(90deg);">
+  else if (mesafe > 10 && mesafe < 20) {
+    for (int i = 1; i <= 5; i++) {
+      digitalWrite(leds[i], HIGH);
+    }
+  }
+
+  else if (mesafe > 20 && mesafe < 30) {
+    for (int i = 1; i <= 8; i++) {
+      digitalWrite(leds[i], HIGH);
+    }
+  }
+
+  else if (mesafe >= 40) {
+    for (int i = 1; i < 11; i++) {
+      digitalWrite(leds[i], HIGH);
+    }
+  }
+
+  Serial.println(mesafe);
+  delay(100);
+}
+
+
 
 
 
